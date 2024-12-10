@@ -36,7 +36,6 @@ public class MediaHelpers {
     private final List<String> supportedFormat = Arrays.asList(
             new String[] { "mp4", "webm", "ogv", "3gp", "flv", "dash", "mpd", "m3u8", "ism", "ytube", "" }
     );
-    private SubtitlesHelpers subtitlesHelpers;
     private final DataSource.Factory dataSourceFactory;
 
     public MediaHelpers(String videoPath, ExtraOptions extra, Context context, PlayerView playerView) {
@@ -45,7 +44,6 @@ public class MediaHelpers {
         this.extra = extra;
         this.context = context;
         this.playerView = playerView;
-        this.subtitlesHelpers = new SubtitlesHelpers(extra.subtitles, playerView);
         this.dataSourceFactory = new DefaultDataSource.Factory(context);
     }
 

@@ -1,7 +1,6 @@
 package dev.eduardoroth.mediaplayer;
 
 import android.Manifest;
-import android.content.Context;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -9,22 +8,24 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
-import com.google.android.gms.cast.framework.CastContext;
-import com.google.common.util.concurrent.MoreExecutors;
 
-import android.net.Uri;
+import android.content.Context;
 import android.util.DisplayMetrics;
 
+import androidx.annotation.OptIn;
+import androidx.media3.common.util.UnstableApi;
+
 import org.json.JSONException;
+
+import java.io.File;
 
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.SubtitleOptions;
-import dev.eduardoroth.mediaplayer.models.SubtitleSettings;
-import dev.eduardoroth.mediaplayer.utilities.FileHelpers;
 import dev.eduardoroth.mediaplayer.utilities.NotificationHelpers;
 import dev.eduardoroth.mediaplayer.utilities.RunnableHelper;
 
+@UnstableApi
 @CapacitorPlugin(
         name = "MediaPlayer",
         permissions = {
@@ -34,23 +35,17 @@ import dev.eduardoroth.mediaplayer.utilities.RunnableHelper;
                         strings = {Manifest.permission.READ_EXTERNAL_STORAGE})
         })
 public class MediaPlayerPlugin extends Plugin {
-    private Context context;
-    private CastContext castContext;
     private MediaPlayer implementation;
-    private FileHelpers fileHelpers;
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     public void load() {
-        context = getContext();
-        try {
-            castContext = CastContext.getSharedInstance(context, MoreExecutors.directExecutor()).getResult();
-        } catch (RuntimeException ignored) {
-        }
         addObserversToNotificationCenter();
-        implementation = new MediaPlayer(context, castContext, bridge);
-        this.fileHelpers = new FileHelpers(context);
+        bridge.getActivity().getSupportFragmentManager();
+        implementation = new MediaPlayer(bridge.getActivity());
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     @PluginMethod
     public void create(final PluginCall call) {
         String playerId = call.getString("playerId");
@@ -72,39 +67,16 @@ public class MediaPlayerPlugin extends Plugin {
             return;
         }
 
-        Uri parsedUrl = null;
-        try {
-            String path = fileHelpers.getFilePath(url);
-            parsedUrl = Uri.parse(path);
-        } catch (NullPointerException ignored) {
-        }
-
         JSObject androidOptions = call.getObject("android");
         JSObject extraOptions = call.getObject("extra");
         JSObject subtitleOptions = extraOptions.getJSObject("subtitles");
 
-        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        DisplayMetrics metrics = bridge.getContext().getResources().getDisplayMetrics();
 
-        double top = Double.parseDouble("0");
-        try {
-            top = androidOptions.getDouble("top");
-        } catch (JSONException ignored) {
-        }
-        double left = Double.parseDouble("0");
-        try {
-            left = androidOptions.getDouble("left");
-        } catch (JSONException ignored) {
-        }
-        double width = Double.parseDouble(String.valueOf(metrics.widthPixels));
-        try {
-            width = androidOptions.getDouble("width");
-        } catch (JSONException ignored) {
-        }
-        double height = ((double) 9 / 16) * ((double) metrics.heightPixels);
-        try {
-            height = androidOptions.getDouble("height");
-        } catch (JSONException ignored) {
-        }
+        Integer paramTop = androidOptions.getInteger("top", null);
+        Integer paramStart = androidOptions.getInteger("start", null);
+        Integer paramWidth = androidOptions.getInteger("width", null);
+        Integer paramHeight = androidOptions.getInteger("height", null);
 
         AndroidOptions android = new AndroidOptions(
                 androidOptions.optBoolean("enableChromecast", true),
@@ -113,10 +85,10 @@ public class MediaPlayerPlugin extends Plugin {
                 androidOptions.optBoolean("openInFullscreen", false),
                 androidOptions.optBoolean("automaticallyEnterPiP", false),
                 androidOptions.optBoolean("fullscreenOnLandscape", true),
-                top,
-                left,
-                height,
-                width
+                paramTop == null ? 0 : (int) (paramTop * metrics.scaledDensity),
+                paramStart == null ? 0 : (int) (paramStart * metrics.scaledDensity),
+                paramWidth == null ? metrics.widthPixels : (int) (paramWidth * metrics.scaledDensity),
+                paramHeight == null ? ((paramWidth == null ? metrics.widthPixels : (int) (paramWidth * metrics.scaledDensity)) * 9 / 16) : (int) (paramHeight * metrics.scaledDensity)
         );
 
         SubtitleOptions subtitles = null;
@@ -124,23 +96,14 @@ public class MediaPlayerPlugin extends Plugin {
             double fontSize = Double.parseDouble("12");
             try {
                 fontSize = subtitleOptions.getDouble("fontSize");
-            } catch (JSONException ignored) {
+            } catch (NullPointerException | JSONException ignored) {
             }
-            SubtitleSettings subtitleSettings = new SubtitleSettings(
-                    subtitleOptions.getString("language"),
-                    subtitleOptions.getString("foregroundColor"),
-                    subtitleOptions.getString("backgroundColor"),
-                    fontSize
-            );
-            Uri subtitlesUrl = null;
-            try {
-                subtitlesUrl = Uri.parse(subtitleOptions.getString("url"));
-            } catch (NullPointerException ignored) {
-            }
-
             subtitles = new SubtitleOptions(
-                    subtitlesUrl,
-                    subtitleSettings
+                    subtitleOptions.getString("url", null),
+                    subtitleOptions.getString("language", "English"),
+                    subtitleOptions.getString("foregroundColor", null),
+                    subtitleOptions.getString("backgroundColor", null),
+                    fontSize
             );
         }
 
@@ -150,16 +113,10 @@ public class MediaPlayerPlugin extends Plugin {
         } catch (JSONException ignored) {
         }
 
-        Uri posterUrl = null;
-        try {
-            posterUrl = Uri.parse(extraOptions.getString("poster"));
-        } catch (NullPointerException ignored) {
-        }
-
         ExtraOptions extra = new ExtraOptions(
                 extraOptions.getString("title"),
                 extraOptions.getString("subtitle"),
-                posterUrl,
+                getFilePath(extraOptions.getString("poster", null)),
                 extraOptions.getString("artist"),
                 rate,
                 subtitles,
@@ -168,8 +125,7 @@ public class MediaPlayerPlugin extends Plugin {
                 extraOptions.optBoolean("showControls", true),
                 extraOptions.getJSObject("headers")
         );
-
-        implementation.create(call, playerId, parsedUrl, android, extra);
+        implementation.create(call, playerId, url, android, extra);
     }
 
     @PluginMethod
@@ -329,7 +285,7 @@ public class MediaPlayerPlugin extends Plugin {
     }
 
     @PluginMethod
-    public void setVisibilityBackgroundForPiP(final PluginCall call){
+    public void setVisibilityBackgroundForPiP(final PluginCall call) {
         JSObject ret = new JSObject();
         ret.put("method", "setVisibilityBackgroundForPiP");
         ret.put("result", false);
@@ -492,6 +448,32 @@ public class MediaPlayerPlugin extends Plugin {
                     }
                 }
         );
+    }
+
+    private String getFilePath(String url) {
+        if (url == null) {
+            return null;
+        }
+        if (url.startsWith("file:///")) {
+            return url;
+        }
+        String path = null;
+        String http = url.substring(0, 4);
+        if (http.equals("http")) {
+            path = url;
+        } else {
+            if (url.startsWith("application")) {
+                String filesDir = getContext().getFilesDir() + "/";
+                path = filesDir + url.substring(url.lastIndexOf("files/") + 6);
+                File file = new File(path);
+                if (!file.exists()) {
+                    path = null;
+                }
+            } else if (url.contains("assets")) {
+                path = "file:///android_asset/" + url;
+            }
+        }
+        return path;
     }
 
     private void addObserversToNotificationCenter() {

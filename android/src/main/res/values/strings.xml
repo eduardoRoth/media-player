@@ -2,9 +2,16 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="media_route_menu_title">Cast</string>
     <string name="cast_context_error">Failed to get Cast context. Try updating Google Play Services and restart the app.</string>
-    <string name="picture_in_picture_button">Picture in picture button</string>
+    <string name="picture_in_picture_button">Start picture in picture for video</string>
     <string name="toggle_fullscreen_button">Toggle fullscreen</string>
     <string name="channel_id">MediaPlayerNotificationChannel</string>
     <string name="channel_name">Media Player</string>
     <string name="channel_description">Notifications for Media Player Plugin</string>
+    <string name="title_activity_media_player">MediaPlayerActivity</string>
+    <string name="playingInPip">This video is playing in Picture in Picture</string>
+    <string name="playingInPipImage">Image for video with active PIP mode</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

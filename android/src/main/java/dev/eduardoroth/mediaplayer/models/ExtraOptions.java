@@ -1,11 +1,14 @@
 package dev.eduardoroth.mediaplayer.models;
-import android.net.Uri;
+import android.graphics.drawable.Drawable;
+
 import com.getcapacitor.JSObject;
 
-public class ExtraOptions {
+import java.io.Serializable;
+
+public class ExtraOptions implements Serializable {
     public String title;
     public String subtitle;
-    public Uri poster;
+    public String poster;
     public String artist;
     public double rate;
     public SubtitleOptions subtitles;
@@ -14,7 +17,7 @@ public class ExtraOptions {
     public boolean showControls;
     public JSObject headers;
 
-    public ExtraOptions(String title, String subtitle, Uri poster, String artist, double rate, SubtitleOptions subtitles, boolean autoPlayWhenReady, boolean loopOnEnd, boolean showControls, JSObject headers) {
+    public ExtraOptions(String title, String subtitle, String poster, String artist, double rate, SubtitleOptions subtitles, boolean autoPlayWhenReady, boolean loopOnEnd, boolean showControls, JSObject headers) {
         this.title = title;
         this.subtitle = subtitle;
         this.poster = poster;

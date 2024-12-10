@@ -17,7 +17,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.OptIn;
 import androidx.fragment.app.Fragment;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
@@ -32,12 +31,11 @@ import java.io.FileNotFoundException;
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerState;
-import dev.eduardoroth.mediaplayer.state.MediaPlayerState.UI_STATE;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
 
-@OptIn(markerClass = UnstableApi.class)
-public class MediaPlayerFragment extends Fragment {
-    private final String playerId;
+@UnstableApi
+public class MediaPlayerControllerView extends Fragment {
+    public final String playerId;
     private final Uri url;
     private final AndroidOptions android;
     private final ExtraOptions extra;
@@ -53,8 +51,8 @@ public class MediaPlayerFragment extends Fragment {
 
     private final DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    public MediaPlayerFragment(String playerId, Uri url, AndroidOptions android, ExtraOptions extra) {
-        mediaPlayerState = MediaPlayerStateProvider.getState(playerId, this);
+    public MediaPlayerControllerView(String playerId, Uri url, AndroidOptions android, ExtraOptions extra) {
+        mediaPlayerState = MediaPlayerStateProvider.getState(playerId);
         this.playerId = playerId;
         this.url = url;
         this.android = android;
@@ -66,10 +64,6 @@ public class MediaPlayerFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mediaPlayerState.canUsePiP.set(android.enablePiP && requireContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE));
 
-        mediaPlayerState.isPlayerReady.observe(state -> {
-            view.findViewById(R.id.MediaPlayerHostPlayer).setVisibility(state ? View.VISIBLE : View.GONE);
-            view.findViewById(R.id.MediaPlayerFragmentPlayerLoading).setVisibility(state ? View.GONE : View.VISIBLE);
-        });
         mediaPlayerState.fullscreenState.observe(state -> {
             switch (state) {
                 case ACTIVE -> fullscreenToggle.setImageResource(R.drawable.ic_fullscreen_exit);
@@ -92,7 +86,7 @@ public class MediaPlayerFragment extends Fragment {
 
                     //startActivity(mediaPlayerIntent);
 
-                    mediaPlayerState.fullscreenState.set(UI_STATE.ACTIVE);
+                    mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.ACTIVE);
 
                 }
                 case WILL_EXIT -> {
@@ -101,7 +95,7 @@ public class MediaPlayerFragment extends Fragment {
                         playerView.setShowsDialog(true);
                         getParentFragmentManager().beginTransaction().hide(playerView).add(0, playerView, playerId).commit();
                     }*/
-                    mediaPlayerState.fullscreenState.set(UI_STATE.INACTIVE);
+                    mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.INACTIVE);
                 }
             }
         });
@@ -149,14 +143,14 @@ public class MediaPlayerFragment extends Fragment {
         mediaPlayerState.showSubtitles.observe(showSubtitles -> playerView.setShowSubtitleButton(showSubtitles));
 
         if (android.openInFullscreen) {
-            mediaPlayerState.fullscreenState.set(UI_STATE.WILL_ENTER);
+            mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_ENTER);
         }
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        View fragmentView = inflater.inflate(R.layout.media_player_fragment, container, false);
+        View fragmentView = inflater.inflate(R.layout.fragment_media_view, container, false);
 
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(android.width, android.height);
         params.topMargin = android.top;
@@ -283,10 +277,9 @@ public class MediaPlayerFragment extends Fragment {
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         boolean isLandscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
-        mediaPlayerState.landscapeState.set(isLandscape ? UI_STATE.ACTIVE : UI_STATE.INACTIVE);
+        mediaPlayerState.landscapeState.set(isLandscape ? MediaPlayerState.UI_STATE.ACTIVE : MediaPlayerState.UI_STATE.INACTIVE);
         if (android.fullscreenOnLandscape && isLandscape) {
-            mediaPlayerState.fullscreenState.set(UI_STATE.WILL_ENTER);
+            mediaPlayerState.fullscreenState.set(MediaPlayerState.UI_STATE.WILL_ENTER);
         }
     }
-
 }

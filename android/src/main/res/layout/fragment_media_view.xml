@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.media3.ui.PlayerView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/MediaPlayerHostPlayer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
+
+    <LinearLayout
+        android:id="@+id/right_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <androidx.mediarouter.app.MediaRouteButton
+            android:id="@+id/cast_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:foregroundTint="@color/white"
+            android:visibility="gone"
+            app:mediaRouteButtonTint="@color/white"
+            tools:visibility="visible" />
+
+        <ImageButton
+            android:id="@+id/pip_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:background="?actionBarItemBackground"
+            android:contentDescription="@string/picture_in_picture_button"
+            android:src="@drawable/ic_pip"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <ImageButton
+            android:id="@+id/toggle_fullscreen"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:background="?actionBarItemBackground"
+            android:contentDescription="@string/toggle_fullscreen_button"
+            android:src="@drawable/ic_fullscreen_enter"
+            android:visibility="visible"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+</androidx.media3.ui.PlayerView>

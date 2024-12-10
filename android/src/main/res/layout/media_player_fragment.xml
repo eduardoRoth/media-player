@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/MediaPlayerFragmentLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="fill"
+    android:animateLayoutChanges="true"
+    android:background="@color/black"
+    android:keepScreenOn="true">
+
+    <LinearLayout
+        android:id="@+id/MediaPlayerFragmentPlayerLoading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="fill"
+        android:animateLayoutChanges="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/MediaPlayerFragmentPlayerInPiP"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="fill"
+        android:animateLayoutChanges="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/MediaPlayerPipActiveImage"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/playingInPipImage"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_pip" />
+
+        <TextView
+            android:id="@+id/MediaPlayerPipActiveText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/playingInPip"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+
+    <androidx.media3.ui.PlayerView xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/MediaPlayerHostPlayer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/right_buttons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <androidx.mediarouter.app.MediaRouteButton
+                android:id="@+id/cast_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:foregroundTint="@color/white"
+                android:visibility="gone"
+                app:mediaRouteButtonTint="@color/white"
+                tools:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/pip_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end"
+                android:background="?actionBarItemBackground"
+                android:contentDescription="@string/picture_in_picture_button"
+                android:src="@drawable/ic_pip"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/toggle_fullscreen"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end"
+                android:background="?actionBarItemBackground"
+                android:contentDescription="@string/toggle_fullscreen_button"
+                android:src="@drawable/ic_fullscreen_enter"
+                android:visibility="visible"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+    </androidx.media3.ui.PlayerView>
+
+</FrameLayout>
