@@ -327,36 +327,48 @@ public class MediaPlayerContainer extends Fragment {
     }
 
     private void updateEmbeddedLayout() {
+        // Create layout parameters with the desired width and height.
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(_placement.width, _placement.height);
+        // Apply horizontal alignment and margins.
         switch (_placement.horizontalAlignment) {
             case "START":
-                params.addRule(RelativeLayout.ALIGN_START);
+                params.addRule(RelativeLayout.ALIGN_PARENT_START);
                 params.setMarginStart(_placement.horizontalMargin);
                 break;
             case "END":
-                params.addRule(RelativeLayout.ALIGN_END);
+                params.addRule(RelativeLayout.ALIGN_PARENT_END);
                 params.setMarginEnd(_placement.horizontalMargin);
                 break;
             case "CENTER":
             default:
                 params.addRule(RelativeLayout.CENTER_HORIZONTAL);
+                // For center alignment, apply left and right margins
+                params.leftMargin = _placement.horizontalMargin;
+                params.rightMargin = _placement.horizontalMargin;
                 break;
         }
+        // Apply vertical alignment and margins.
         switch (_placement.verticalAlignment) {
             case "BOTTOM":
-                params.addRule(RelativeLayout.ALIGN_BOTTOM);
+                params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
                 params.bottomMargin = _placement.verticalMargin;
                 break;
             case "CENTER":
                 params.addRule(RelativeLayout.CENTER_VERTICAL);
+                // Optionally, apply top and bottom margins for center vertical alignment.
+                params.topMargin = _placement.verticalMargin;
+                params.bottomMargin = _placement.verticalMargin;
+                break;
             case "TOP":
             default:
-                params.addRule(RelativeLayout.ALIGN_TOP);
+                params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
                 params.topMargin = _placement.verticalMargin;
                 break;
         }
-        params.height = _placement.height;
+        // Ensure the width and height are correctly set.
         params.width = _placement.width;
+        params.height = _placement.height;
+        // Apply the updated layout parameters to the embedded view.
         _embeddedView.setLayoutParams(params);
     }
 
