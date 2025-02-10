@@ -1,0 +1,36 @@
+name: Publish media-player v3.x to npm
+
+on:
+  push:
+    branches:
+      - v3
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v3
+
+      - uses: EndBug/version-check@v2
+        id: check
+        with:
+          diff-search: true
+
+      - if: steps.check.outputs.changed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - if: steps.check.outputs.changed == 'true'
+        run: npm ci
+
+      - if: steps.check.outputs.changed == 'true'
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
