@@ -42,8 +42,7 @@
     "docgen": "docgen --api MediaPlayerPlugin --output-readme README.md --output-json dist/docs.json",
     "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.mjs",
     "clean": "rimraf ./dist",
-    "watch": "tsc --watch",
-    "prepublishOnly": "npm run build && git push --follow-tags"
+    "watch": "tsc --watch"
   },
   "devDependencies": {
     "@capacitor/android": "^6.2.0",
