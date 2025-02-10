@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - if: steps.check.outputs.changed == 'true'
-        run: npm build
+        run: npm run build
 
       - if: steps.check.outputs.changed == 'true'
         run: npm publish --provenance --access public
