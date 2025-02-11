@@ -280,7 +280,7 @@ public class MediaPlayer {
             }
     
             // Clear the stored state so that a new creation doesn't reuse the old state.
-            MediaPlayerStateProvider.removeState(playerId);
+            MediaPlayerStateProvider.clearState(playerId);
     
             // Post a notification that the player was removed.
             MediaPlayerNotificationCenter.post(
@@ -317,7 +317,7 @@ public class MediaPlayer {
                 MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED)
                     .build()
             );
-            MediaPlayerStateProvider.removeState(playerId);
+            MediaPlayerStateProvider.clearState(playerId);
         }
         JSObject ret = new JSObject();
         ret.put("method", "removeAll");
