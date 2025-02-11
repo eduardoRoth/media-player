@@ -1,8 +1,8 @@
 ext {
     junitVersion = project.hasProperty('junitVersion') ? rootProject.ext.junitVersion : '4.13.2'
-    androidxAppCompatVersion = project.hasProperty('androidxAppCompatVersion') ? rootProject.ext.androidxAppCompatVersion : '1.7.0'
-    androidxJunitVersion = project.hasProperty('androidxJunitVersion') ? rootProject.ext.androidxJunitVersion : '1.2.1'
-    androidxEspressoCoreVersion = project.hasProperty('androidxEspressoCoreVersion') ? rootProject.ext.androidxEspressoCoreVersion : '3.6.1'
+    androidxAppCompatVersion = project.hasProperty('androidxAppCompatVersion') ? rootProject.ext.androidxAppCompatVersion : '1.6.1'
+    androidxJunitVersion = project.hasProperty('androidxJunitVersion') ? rootProject.ext.androidxJunitVersion : '1.1.5'
+    androidxEspressoCoreVersion = project.hasProperty('androidxEspressoCoreVersion') ? rootProject.ext.androidxEspressoCoreVersion : '3.5.1'
 }
 
 buildscript {
@@ -19,10 +19,10 @@ apply plugin: 'com.android.library'
 
 android {
     namespace "dev.eduardoroth.mediaplayer"
-    compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 35
+    compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 34
     defaultConfig {
-        minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 23
-        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 35
+        minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 22
+        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 34
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -37,8 +37,8 @@ android {
         abortOnError false
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     buildFeatures {
         viewBinding true
@@ -56,7 +56,7 @@ dependencies {
     implementation project(':capacitor-android')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.lifecycle:lifecycle-common:2.8.7'
     implementation 'androidx.lifecycle:lifecycle-livedata:2.8.7'
@@ -66,12 +66,12 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
 
-    implementation "androidx.media3:media3-exoplayer:1.5.1"
-    implementation "androidx.media3:media3-exoplayer-hls:1.5.1"
-    implementation "androidx.media3:media3-exoplayer-dash:1.5.1"
-    implementation "androidx.media3:media3-ui:1.5.1"
-    implementation "androidx.media3:media3-session:1.5.1"
-    implementation "androidx.media3:media3-exoplayer-smoothstreaming:1.5.1"
-    implementation "androidx.media3:media3-cast:1.5.1"
+    implementation "androidx.media3:media3-exoplayer:1.4.1"
+    implementation "androidx.media3:media3-exoplayer-hls:1.4.1"
+    implementation "androidx.media3:media3-exoplayer-dash:1.4.1"
+    implementation "androidx.media3:media3-ui:1.4.1"
+    implementation "androidx.media3:media3-session:1.4.1"
+    implementation "androidx.media3:media3-exoplayer-smoothstreaming:1.4.1"
+    implementation "androidx.media3:media3-cast:1.4.1"
 
 }
