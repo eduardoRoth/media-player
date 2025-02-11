@@ -3,7 +3,6 @@ package dev.eduardoroth.mediaplayer;
 import android.content.ComponentName;
 import android.os.Bundle;
 import android.util.Log;
-
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -11,21 +10,19 @@ import androidx.media3.common.C;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.session.MediaController;
 import androidx.media3.session.SessionToken;
-
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
 import com.google.common.util.concurrent.ListenableFuture;
-
-import java.io.File;
-
 import dev.eduardoroth.mediaplayer.models.AndroidOptions;
 import dev.eduardoroth.mediaplayer.models.ExtraOptions;
 import dev.eduardoroth.mediaplayer.models.MediaPlayerNotification;
 import dev.eduardoroth.mediaplayer.models.PlacementOptions;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerState;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
+import java.io.File;
 
 public class MediaPlayer {
+
     public static long VIDEO_STEP = 10000;
     private final AppCompatActivity _currentActivity;
 
@@ -34,7 +31,14 @@ public class MediaPlayer {
     }
 
     @OptIn(markerClass = UnstableApi.class)
-    public void create(PluginCall call, String playerId, String url, PlacementOptions placement, AndroidOptions android, ExtraOptions extra) {
+    public void create(
+        PluginCall call,
+        String playerId,
+        String url,
+        PlacementOptions placement,
+        AndroidOptions android,
+        ExtraOptions extra
+    ) {
         Bundle connectionHints = new Bundle();
         connectionHints.putString("playerId", playerId);
         connectionHints.putString("videoUrl", url);
@@ -44,28 +48,37 @@ public class MediaPlayer {
         connectionHints.putSerializable("extra", extra);
 
         SessionToken sessionToken = new SessionToken(
-                _currentActivity.getApplicationContext(),
-                new ComponentName(_currentActivity.getApplicationContext(), MediaPlayerService.class)
+            _currentActivity.getApplicationContext(),
+            new ComponentName(_currentActivity.getApplicationContext(), MediaPlayerService.class)
         );
-        ListenableFuture<MediaController> futureController = new MediaController
-                .Builder(_currentActivity.getApplicationContext(), sessionToken)
-                .setConnectionHints(connectionHints)
-                .buildAsync();
+        ListenableFuture<MediaController> futureController = new MediaController.Builder(
+            _currentActivity.getApplicationContext(),
+            sessionToken
+        )
+            .setConnectionHints(connectionHints)
+            .buildAsync();
 
-        futureController.addListener(() -> {
-            JSObject ret = new JSObject();
-            ret.put("method", "create");
-            try {
-                _currentActivity.getSupportFragmentManager().beginTransaction().add(R.id.MediaPlayerFragmentContainerView, new MediaPlayerContainer(futureController.get(), playerId), playerId).commit();
-                ret.put("result", true);
-                ret.put("value", playerId);
-                call.resolve(ret);
-            } catch (Exception | Error futureError) {
-                ret.put("result", false);
-                ret.put("message", "An error occurred while creating player with id " + playerId + ".\n" + futureError.getMessage());
-                call.resolve(ret);
-            }
-        }, _currentActivity.getMainExecutor());
+        futureController.addListener(
+            () -> {
+                JSObject ret = new JSObject();
+                ret.put("method", "create");
+                try {
+                    _currentActivity
+                        .getSupportFragmentManager()
+                        .beginTransaction()
+                        .add(R.id.MediaPlayerFragmentContainerView, new MediaPlayerContainer(futureController.get(), playerId), playerId)
+                        .commit();
+                    ret.put("result", true);
+                    ret.put("value", playerId);
+                    call.resolve(ret);
+                } catch (Exception | Error futureError) {
+                    ret.put("result", false);
+                    ret.put("message", "An error occurred while creating player with id " + playerId + ".\n" + futureError.getMessage());
+                    call.resolve(ret);
+                }
+            },
+            _currentActivity.getMainExecutor()
+        );
     }
 
     public void play(PluginCall call, String playerId) {
@@ -136,7 +149,9 @@ public class MediaPlayer {
 
             long duration = controller.getDuration();
             long currentTime = controller.getCurrentPosition();
-            long seekPosition = currentTime == C.TIME_UNSET ? 0 : Math.min(Math.max(0, time * 1000), duration == C.TIME_UNSET ? 0 : duration);
+            long seekPosition = currentTime == C.TIME_UNSET
+                ? 0
+                : Math.min(Math.max(0, time * 1000), duration == C.TIME_UNSET ? 0 : duration);
             controller.seekTo(seekPosition);
             ret.put("result", true);
             ret.put("value", seekPosition);
@@ -254,11 +269,24 @@ public class MediaPlayer {
         try {
             MediaPlayerState state = MediaPlayerStateProvider.getState(playerId);
             state.mediaController.get().stop();
+
+            // Find and remove the fragment.
             Fragment playerFragment = _currentActivity.getSupportFragmentManager().findFragmentByTag(playerId);
             if (playerFragment != null) {
-                _currentActivity.getSupportFragmentManager().beginTransaction().remove(playerFragment).commit();
+                _currentActivity.getSupportFragmentManager()
+                    .beginTransaction()
+                    .remove(playerFragment)
+                    .commitNow();
             }
-            MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED).build());
+    
+            // Clear the stored state so that a new creation doesn't reuse the old state.
+            MediaPlayerStateProvider.removeState(playerId);
+    
+            // Post a notification that the player was removed.
+            MediaPlayerNotificationCenter.post(
+                MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED)
+                    .build()
+            );
             ret.put("result", true);
             ret.put("value", playerId);
         } catch (Error | Exception err) {
@@ -268,17 +296,29 @@ public class MediaPlayer {
         call.resolve(ret);
     }
 
+
+
+
     public void removeAll(PluginCall call) {
-        _currentActivity.getSupportFragmentManager().getFragments().forEach(fragment -> {
+        List<Fragment> fragments = new ArrayList<>(_currentActivity.getSupportFragmentManager().getFragments());
+        for (Fragment fragment : fragments) {
             String playerId = fragment.getTag();
-            _currentActivity.getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+            _currentActivity.getSupportFragmentManager()
+                .beginTransaction()
+                .remove(fragment)
+                .commitNow();
             try {
                 MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
                 playerState.mediaController.get().stop();
-            } catch (Error ignored) {
+            } catch (Error | Exception ignored) {
+                // Ignore errors for missing state.
             }
-            MediaPlayerNotificationCenter.post(MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED).build());
-        });
+            MediaPlayerNotificationCenter.post(
+                MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED)
+                    .build()
+            );
+            MediaPlayerStateProvider.removeState(playerId);
+        }
         JSObject ret = new JSObject();
         ret.put("method", "removeAll");
         ret.put("result", true);
