@@ -263,49 +263,78 @@ public class MediaPlayer {
         call.resolve(ret);
     }
 
-    public void remove(PluginCall call, String playerId) {
-        JSObject ret = new JSObject();
-        ret.put("method", "remove");
-        try {
-            MediaPlayerState state = MediaPlayerStateProvider.getState(playerId);
+public void remove(PluginCall call, String playerId) {
+    JSObject ret = new JSObject();
+    ret.put("method", "remove");
+    try {
+        // Retrieve and stop the media controller for this player.
+        MediaPlayerState state = MediaPlayerStateProvider.getState(playerId);
+        if (state != null && state.mediaController.get() != null) {
             state.mediaController.get().stop();
-            Fragment playerFragment = _currentActivity.getSupportFragmentManager().findFragmentByTag(playerId);
-            if (playerFragment != null) {
-                _currentActivity.getSupportFragmentManager().beginTransaction().remove(playerFragment).commit();
-            }
-            MediaPlayerNotificationCenter.post(
-                MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED).build()
-            );
-            ret.put("result", true);
-            ret.put("value", playerId);
-        } catch (Error | Exception err) {
-            ret.put("result", false);
-            ret.put("message", "Player not found. " + err.getMessage());
         }
-        call.resolve(ret);
+
+        // Find the fragment associated with this player ID.
+        Fragment playerFragment = _currentActivity.getSupportFragmentManager().findFragmentByTag(playerId);
+        if (playerFragment != null) {
+            // Remove the fragment using commit() (asynchronous)...
+            _currentActivity.getSupportFragmentManager()
+                .beginTransaction()
+                .remove(playerFragment)
+                .commit();
+            // ...and force pending transactions to execute immediately.
+            _currentActivity.getSupportFragmentManager().executePendingTransactions();
+        }
+        
+        // Clear the stored state so that a new creation doesn't reuse the old state.
+        MediaPlayerStateProvider.removeState(playerId);
+        
+        // Post a notification that the player was removed.
+        MediaPlayerNotificationCenter.post(
+            MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED)
+                .build()
+        );
+        ret.put("result", true);
+        ret.put("value", playerId);
+    } catch (Error | Exception err) {
+        ret.put("result", false);
+        ret.put("message", "Player not found. " + err.getMessage());
     }
+    call.resolve(ret);
+}
 
     public void removeAll(PluginCall call) {
-        _currentActivity
-            .getSupportFragmentManager()
-            .getFragments()
-            .forEach(fragment -> {
-                String playerId = fragment.getTag();
-                _currentActivity.getSupportFragmentManager().beginTransaction().remove(fragment).commit();
-                try {
-                    MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
+        // Get a copy of the current fragments.
+        List<Fragment> fragments = new ArrayList<>(_currentActivity.getSupportFragmentManager().getFragments());
+        for (Fragment fragment : fragments) {
+            String playerId = fragment.getTag();
+            // Remove each fragment.
+            _currentActivity.getSupportFragmentManager()
+                .beginTransaction()
+                .remove(fragment)
+                .commit();
+            _currentActivity.getSupportFragmentManager().executePendingTransactions();
+            try {
+                MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
+                if (playerState != null && playerState.mediaController.get() != null) {
                     playerState.mediaController.get().stop();
-                } catch (Error ignored) {}
-                MediaPlayerNotificationCenter.post(
-                    MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED).build()
-                );
-            });
+                }
+            } catch (Error ignored) {
+                // Ignore errors for missing state.
+            }
+            MediaPlayerNotificationCenter.post(
+                MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED)
+                    .build()
+            );
+            // Remove the state to avoid reusing the player ID.
+            MediaPlayerStateProvider.removeState(playerId);
+        }
         JSObject ret = new JSObject();
         ret.put("method", "removeAll");
         ret.put("result", true);
         ret.put("value", "[]");
         call.resolve(ret);
     }
+
 
     private String getFinalPath(String url) {
         if (url == null) {
