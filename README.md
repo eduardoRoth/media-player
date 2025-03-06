@@ -1,5 +1,7 @@
 # @eduardoroth/media-player
 
+[![All Contributors](https://img.shields.io/github/all-contributors/eduardoRoth/media-player?color=ee8449&style=flat-square)](#contributors)
+
 Native Media Player for iOS, Android and Browser.
 Based on the great work of [@jepiqueau](https://github.com/jepiqueau)
 
@@ -38,6 +40,17 @@ This will make sure the app doesn't break when doing any of the following action
 - Casting or mirroring the screen
 - Changing the font scale
 - Changing the screen density
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## API
 
