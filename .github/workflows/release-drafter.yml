@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - master
-      - 'v**'
+      - v**
 
   pull_request:
     types: [opened, reopened, synchronize]
