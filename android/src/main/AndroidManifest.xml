@@ -11,9 +11,6 @@
         android:hardwareAccelerated="true"
         tools:ignore="UnusedAttribute">
 
-        <meta-data
-            android:name="com.google.android.gms.car.application"
-            android:resource="@xml/auto_app_desc" />
         <service
             android:name=".MediaPlayerService"
             android:exported="true"
