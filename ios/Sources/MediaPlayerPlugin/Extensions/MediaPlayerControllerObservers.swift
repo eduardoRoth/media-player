@@ -49,6 +49,36 @@ extension MediaPlayerController {
                     self.setNowPlayingInfo()
                     self.setNowPlayingImage()
                     self.setRemoteCommandCenter()
+                    // For audio-only files, hide loading immediately
+                    if self.isAudioOnly() {
+                        self.setLoading(isLoading: false)
+                        self.isLoaded = true
+                        NotificationCenter.default.post(name: .mediaPlayerReady, object: nil, userInfo: ["playerId": self.playerId, "currentTime": self.currentTime, "videoRate": self.rate])
+                        if self.extra.autoPlayWhenReady == true {
+                            self.player.play()
+                        }
+                        // Set up buffering observers for audio
+                        self.isPlaybackBufferEmptyObserver = self.player.currentItem!
+                            .observe(\.isPlaybackBufferEmpty, options: [.new, .old], changeHandler: { (item, _) in
+                                if item.isPlaybackBufferEmpty {
+                                    self.setLoading(isLoading: true)
+                                }
+                            })
+
+                        self.isPlaybackLikelyToKeepUpObserver = self.player.currentItem!
+                            .observe(\.isPlaybackLikelyToKeepUp, options: [.new, .old], changeHandler: { (item, _) in
+                                if item.isPlaybackLikelyToKeepUp {
+                                    self.setLoading(isLoading: false)
+                                }
+                            })
+
+                        self.isPlaybackBufferFullObserver = self.player.currentItem!
+                            .observe(\.isPlaybackBufferFull, options: [.new, .old], changeHandler: { (item, _) in
+                                if item.isPlaybackBufferFull {
+                                    self.setLoading(isLoading: false)
+                                }
+                            })
+                    }
                 case .failed, .unknown:
                     self.isLoaded = false
                     self.isVideoEnd = false
@@ -64,7 +94,7 @@ extension MediaPlayerController {
 
         self.isReadyObserver = self.playerController
             .observe(\.isReadyForDisplay, options: [.new, .old], changeHandler: { (player, _) in
-                if player.isReadyForDisplay {
+                if player.isReadyForDisplay && !self.isAudioOnly() {
                     self.setLoading(isLoading: false)
                     self.isLoaded = true
                     NotificationCenter.default.post(name: .mediaPlayerReady, object: nil, userInfo: ["playerId": self.playerId, "currentTime": self.currentTime, "videoRate": self.rate])
