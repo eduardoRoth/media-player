@@ -132,6 +132,11 @@ public class MediaPlayerController: UIViewController {
         setLayoutConstraints()
     }
 
+    public func isAudioOnly() -> Bool {
+        let tracks = videoAsset.tracks(withMediaType: .video)
+        return tracks.isEmpty
+    }
+
     public func setLoading(isLoading: Bool) {
         if isLoading {
             self.loadingView.startAnimating()
