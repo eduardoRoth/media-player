@@ -20,8 +20,8 @@ import dev.eduardoroth.mediaplayer.models.PlacementOptions;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerState;
 import dev.eduardoroth.mediaplayer.state.MediaPlayerStateProvider;
 import java.io.File;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MediaPlayer {
 
@@ -275,19 +275,15 @@ public class MediaPlayer {
             // Find and remove the fragment.
             Fragment playerFragment = _currentActivity.getSupportFragmentManager().findFragmentByTag(playerId);
             if (playerFragment != null) {
-                _currentActivity.getSupportFragmentManager()
-                    .beginTransaction()
-                    .remove(playerFragment)
-                    .commitNow();
+                _currentActivity.getSupportFragmentManager().beginTransaction().remove(playerFragment).commitNow();
             }
-    
+
             // Clear the stored state so that a new creation doesn't reuse the old state.
             MediaPlayerStateProvider.clearState(playerId);
-    
+
             // Post a notification that the player was removed.
             MediaPlayerNotificationCenter.post(
-                MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED)
-                    .build()
+                MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED).build()
             );
             ret.put("result", true);
             ret.put("value", playerId);
@@ -298,17 +294,11 @@ public class MediaPlayer {
         call.resolve(ret);
     }
 
-
-
-
     public void removeAll(PluginCall call) {
         List<Fragment> fragments = new ArrayList<>(_currentActivity.getSupportFragmentManager().getFragments());
         for (Fragment fragment : fragments) {
             String playerId = fragment.getTag();
-            _currentActivity.getSupportFragmentManager()
-                .beginTransaction()
-                .remove(fragment)
-                .commitNow();
+            _currentActivity.getSupportFragmentManager().beginTransaction().remove(fragment).commitNow();
             try {
                 MediaPlayerState playerState = MediaPlayerStateProvider.getState(playerId);
                 playerState.mediaController.get().stop();
@@ -316,8 +306,7 @@ public class MediaPlayer {
                 // Ignore errors for missing state.
             }
             MediaPlayerNotificationCenter.post(
-                MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED)
-                    .build()
+                MediaPlayerNotification.create(playerId, MediaPlayerNotificationCenter.NOTIFICATION_TYPE.MEDIA_PLAYER_REMOVED).build()
             );
             MediaPlayerStateProvider.clearState(playerId);
         }

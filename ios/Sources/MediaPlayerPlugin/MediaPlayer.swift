@@ -153,11 +153,36 @@ import AVKit
         }
     }
     @objc func removeAll(call: CAPPluginCall) {
-        DispatchQueue.main.sync {
-            for(_, controller) in controllers {
+        DispatchQueue.main.async {
+            // First thoroughly clean up each player
+            for (_, controller) in self.controllers {
+                // Stop playback
+                controller.player.pause()
+
+                // Clear any items from the player
+                controller.player.replaceCurrentItem(with: nil)
+
+                // Reset player state if needed
+                controller.player.seek(to: CMTime.zero)
+                controller.player.rate = 0
+
+                // Remove any observers the controller has
+                controller.removeObservers()
+
+                // Release the player through controller method
                 controller.releasePlayer()
             }
-            removeAllMediaPlayerControllers()
+
+            // Reset the audio session
+            do {
+                try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            } catch {
+                print("Failed to deactivate audio session: \(error)")
+            }
+
+            // Now clear the controllers array
+            self.removeAllMediaPlayerControllers()
+
             call.resolve(["result": true, "method": "removeAll", "value": true])
         }
     }

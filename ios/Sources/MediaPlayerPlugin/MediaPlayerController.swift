@@ -189,6 +189,7 @@ public class MediaPlayerController: UIViewController {
         self.clearNowPlaying()
         self.removeObservers()
         self.player.pause()
+        self.player.replaceCurrentItem(with: nil)
         self.playerController.player = nil
         self.playerController.willMove(toParent: nil)
         self.playerController.view.removeFromSuperview()
@@ -196,6 +197,7 @@ public class MediaPlayerController: UIViewController {
         self.willMove(toParent: nil)
         self.view.removeFromSuperview()
         self.removeFromParent()
+        self.removeObservers()
     }
 
     public required init?(coder: NSCoder) {
