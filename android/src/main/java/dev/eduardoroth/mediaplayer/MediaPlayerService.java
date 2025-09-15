@@ -65,9 +65,20 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
         PlacementOptions placement = (PlacementOptions) controllerInfo.getConnectionHints().getSerializable("placement");
         AndroidOptions android = (AndroidOptions) controllerInfo.getConnectionHints().getSerializable("android");
         ExtraOptions extra = (ExtraOptions) controllerInfo.getConnectionHints().getSerializable("extra");
-        assert placement != null;
-        assert android != null;
-        assert extra != null;
+
+        // Validate and provide defaults if options are missing
+        if (placement == null) {
+            android.util.Log.w("MediaPlayerService", "PlacementOptions is null for player " + playerId + ", using defaults");
+            placement = new PlacementOptions();
+        }
+        if (android == null) {
+            android.util.Log.w("MediaPlayerService", "AndroidOptions is null for player " + playerId + ", using defaults");
+            android = new AndroidOptions();
+        }
+        if (extra == null) {
+            android.util.Log.w("MediaPlayerService", "ExtraOptions is null for player " + playerId + ", using defaults");
+            extra = new ExtraOptions();
+        }
 
         if (doesSessionExists != null) {
             String currentPlayerId = doesSessionExists.getSessionExtras().getString("playerId");

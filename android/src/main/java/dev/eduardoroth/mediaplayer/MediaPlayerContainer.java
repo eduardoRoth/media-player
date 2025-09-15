@@ -55,6 +55,10 @@ public class MediaPlayerContainer extends Fragment {
     private RelativeLayout _embeddedView;
     private FrameLayout _fullscreenView;
 
+		public MediaPlayerContainer() {
+			// Required empty public constructor for fragment instantiation
+		}
+
     public MediaPlayerContainer(MediaController playerController, String playerId) {
         _playerId = playerId;
         _playerController = playerController;
