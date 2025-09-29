@@ -16,6 +16,20 @@ public class ExtraOptions implements Serializable {
     public boolean showControls;
     public JSObject headers;
 
+    // Default constructor with sensible defaults
+    public ExtraOptions() {
+        this.title = "";
+        this.subtitle = "";
+        this.poster = "";
+        this.artist = "";
+        this.rate = 1.0; // Normal playback speed
+        this.subtitles = null;
+        this.autoPlayWhenReady = false; // Don't autoplay by default
+        this.loopOnEnd = false;
+        this.showControls = true; // Show controls by default for better UX
+        this.headers = null;
+    }
+
     public ExtraOptions(
         String title,
         String subtitle,

@@ -14,6 +14,17 @@ public class PlacementOptions implements Serializable {
     public int horizontalMargin;
     public int verticalMargin;
 
+    // Default constructor with sensible defaults
+    public PlacementOptions() {
+        this.height = 0; // Will use default height
+        this.width = 0;  // Will use default width
+        this.videoOrientation = "portrait";
+        this.horizontalAlignment = "center";
+        this.verticalAlignment = "center";
+        this.horizontalMargin = 0;
+        this.verticalMargin = 0;
+    }
+
     public PlacementOptions(
         int height,
         int width,

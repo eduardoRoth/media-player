@@ -12,6 +12,17 @@ public class AndroidOptions implements Serializable {
     public boolean fullscreenOnLandscape;
     public boolean stopOnTaskRemoved;
 
+    // Default constructor with sensible defaults for Capacitor plugin
+    public AndroidOptions() {
+        this.enableChromecast = false;
+        this.enablePiP = false;
+        this.enableBackgroundPlay = false;
+        this.openInFullscreen = false;
+        this.automaticallyEnterPiP = false;
+        this.fullscreenOnLandscape = false;
+        this.stopOnTaskRemoved = true; // Default to true for better memory management
+    }
+
     public AndroidOptions(
         boolean enableChromecast,
         boolean enablePiP,
