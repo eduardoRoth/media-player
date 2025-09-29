@@ -1,6 +1,6 @@
 {
   "name": "@eduardoroth/media-player",
-  "version": "4.0.10",
+  "version": "4.0.11",
   "description": "Updated Media Player for iOS, Android and Web",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
