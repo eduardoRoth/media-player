@@ -47,8 +47,8 @@ public class MediaPlayerContainer extends Fragment {
     private AndroidOptions _android;
     private ExtraOptions _extra;
     private MediaPlayerState _mediaPlayerState;
-    private final MediaController _playerController;
-    private final String _playerId;
+    private MediaController _playerController;
+    private String _playerId;
     private final Rect _sourceRectHint = new Rect();
     private PlayerView _embeddedPlayerView;
     private PlayerView _fullscreenPlayerView;
