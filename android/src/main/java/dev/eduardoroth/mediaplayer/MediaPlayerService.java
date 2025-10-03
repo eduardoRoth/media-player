@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
@@ -68,15 +69,15 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
 
         // Validate and provide defaults if options are missing
         if (placement == null) {
-            android.util.Log.w("MediaPlayerService", "PlacementOptions is null for player " + playerId + ", using defaults");
+            Log.w("MediaPlayerService", "PlacementOptions is null for player " + playerId + ", using defaults");
             placement = new PlacementOptions();
         }
         if (android == null) {
-            android.util.Log.w("MediaPlayerService", "AndroidOptions is null for player " + playerId + ", using defaults");
+            Log.w("MediaPlayerService", "AndroidOptions is null for player " + playerId + ", using defaults");
             android = new AndroidOptions();
         }
         if (extra == null) {
-            android.util.Log.w("MediaPlayerService", "ExtraOptions is null for player " + playerId + ", using defaults");
+            Log.w("MediaPlayerService", "ExtraOptions is null for player " + playerId + ", using defaults");
             extra = new ExtraOptions();
         }
 
