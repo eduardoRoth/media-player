@@ -81,6 +81,14 @@ public class MediaPlayerService extends MediaSessionService implements Lifecycle
             extra = new ExtraOptions();
         }
 
+        // Media button broadcasts (onStartCommand) and legacy MediaBrowser binds (onBind) reach here with
+        // empty connection hints, so there is no URL to play. Reject the connection - which onGetSession
+        // explicitly allows - instead of building a player around Uri.parse(null), which crashes the app.
+        if (videoUrl == null) {
+            Log.w("MediaPlayerService", "No videoUrl in connection hints for player " + playerId + ", rejecting connection");
+            return null;
+        }
+
         if (doesSessionExists != null) {
             String currentPlayerId = doesSessionExists.getSessionExtras().getString("playerId");
             if (currentPlayerId != null && currentPlayerId.equalsIgnoreCase(playerId)) {
