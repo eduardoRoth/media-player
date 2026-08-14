@@ -65,6 +65,17 @@ extension MediaPlayerController {
         self.isReadyObserver = self.playerController
             .observe(\.isReadyForDisplay, options: [.new, .old], changeHandler: { (player, _) in
                 if player.isReadyForDisplay {
+                    // The first frame can become ready after releasePlayer() has already run and set
+                    // currentItem to nil: this observation is not invalidated on teardown, and AVKit
+                    // delivers readyForDisplay asynchronously on the main queue. Bail out instead of
+                    // force-unwrapping, and do it before emitting ready so a torn-down player never
+                    // reports itself as playable.
+                    guard let currentItem = self.player.currentItem else {
+                        NSLog("%@", "MediaPlayerController: isReadyForDisplay with no currentItem for player \(self.playerId), ignoring post-teardown notification")
+                        self.isReadyObserver?.invalidate()
+                        return
+                    }
+
                     self.setLoading(isLoading: false)
                     self.isLoaded = true
                     NotificationCenter.default.post(name: .mediaPlayerReady, object: nil, userInfo: ["playerId": self.playerId, "currentTime": self.currentTime, "videoRate": self.rate])
@@ -73,23 +84,23 @@ extension MediaPlayerController {
                     } else {
                         self.setAllowHidingPlaybackControls(allowHiding: false)
                     }
-                    self.isReadyObserver!.invalidate()
+                    self.isReadyObserver?.invalidate()
 
-                    self.isPlaybackBufferEmptyObserver = self.player.currentItem!
+                    self.isPlaybackBufferEmptyObserver = currentItem
                         .observe(\.isPlaybackBufferEmpty, options: [.new, .old], changeHandler: { (item, _) in
                             if item.isPlaybackBufferEmpty {
                                 self.setLoading(isLoading: true)
                             }
                         })
 
-                    self.isPlaybackLikelyToKeepUpObserver = self.player.currentItem!
+                    self.isPlaybackLikelyToKeepUpObserver = currentItem
                         .observe(\.isPlaybackLikelyToKeepUp, options: [.new, .old], changeHandler: { (item, _) in
                             if item.isPlaybackLikelyToKeepUp {
                                 self.setLoading(isLoading: false)
                             }
                         })
 
-                    self.isPlaybackBufferFullObserver = self.player.currentItem!
+                    self.isPlaybackBufferFullObserver = currentItem
                         .observe(\.isPlaybackBufferFull, options: [.new, .old], changeHandler: { (item, _) in
                             if item.isPlaybackBufferFull {
                                 self.setLoading(isLoading: false)
@@ -121,6 +132,9 @@ extension MediaPlayerController {
 
         self.rateObserver = self.player
             .observe(\.rate, options: [.new], changeHandler: {(player, observed) in
+                guard let newRate = observed.newValue else {
+                    return
+                }
                 self.currentTime = CMTimeGetSeconds(self.playerItem.currentTime())
                 self.duration = CMTimeGetSeconds(self.playerItem.duration)
                 let userInfo = [
@@ -130,9 +144,9 @@ extension MediaPlayerController {
                 ]
 
                 if self.player.timeControlStatus == .playing {
-                    if observed.newValue! > 0 {
-                        if self.rate != observed.newValue! {
-                            self.rate = observed.newValue!
+                    if newRate > 0 {
+                        if self.rate != newRate {
+                            self.rate = newRate
                             player.rate = self.rate
                         }
                         NotificationCenter.default.post(
@@ -140,7 +154,7 @@ extension MediaPlayerController {
                             object: nil,
                             userInfo: userInfo
                         )
-                    } else if observed.newValue! == 0 {
+                    } else if newRate == 0 {
                         if !self.isVideoEnd && abs(self.currentTime - self.duration) < 0.2 {
                             player.seek(to: CMTime.zero)
                             self.currentTime = 0
@@ -168,12 +182,25 @@ extension MediaPlayerController {
     }
 
     func removeObservers() {
+        NotificationCenter.default.removeObserver(self)
+
+        // isReadyObserver was previously invalidated only inside its own handler, so a player torn
+        // down before its first frame left a live observation (and a self -> observation -> closure
+        // -> self retain cycle) behind. Nil each one after invalidating so a second call is a no-op.
+        self.isReadyObserver?.invalidate()
+        self.isReadyObserver = nil
         self.isPlayingObserver?.invalidate()
+        self.isPlayingObserver = nil
         self.rateObserver?.invalidate()
+        self.rateObserver = nil
         self.statusObserver?.invalidate()
+        self.statusObserver = nil
 
         self.isPlaybackBufferFullObserver?.invalidate()
+        self.isPlaybackBufferFullObserver = nil
         self.isPlaybackBufferEmptyObserver?.invalidate()
+        self.isPlaybackBufferEmptyObserver = nil
         self.isPlaybackLikelyToKeepUpObserver?.invalidate()
+        self.isPlaybackLikelyToKeepUpObserver = nil
     }
 }
